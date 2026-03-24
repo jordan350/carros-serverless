@@ -1,10 +1,17 @@
 <div class="main-container">
   <div class="search-box">
-    <input type="text" placeholder="Buscar por nombre...">
-    <button>Buscar</button>
+    <input #txtNombre type="text" 
+           placeholder="Buscar por nombre (ej. Maruti)..." 
+           (keyup.enter)="buscar(txtNombre.value)">
+    
+    <button (click)="buscar(txtNombre.value)">Buscar</button>
+    
+    <button class="btn-reset" (click)="obtenerTodos(); txtNombre.value=''">Limpiar</button>
   </div>
 
-  <div class="card-grid">
+  <div *ngIf="cargando" class="loading">Buscando en la BD...</div>
+
+  <div class="card-grid" *ngIf="!cargando">
     <div class="card" *ngFor="let carro of listaCarros">
       <span class="card-tag">{{ carro.year }}</span>
       <h3>{{ carro.name }}</h3>

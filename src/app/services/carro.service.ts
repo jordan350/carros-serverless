@@ -7,9 +7,8 @@ import { Carro } from '../models/carros.model';
   providedIn: 'root'
 })
 export class CarroService {
-  // URL de la Azure Function 
-  private apiUrl = 'https://tu-app-functions.azurewebsites.net/api/GetCarros';
 
+  private apiUrl = '/api/cars';
   constructor(private http: HttpClient) { }
 
   // Método para obtener todos los carros 

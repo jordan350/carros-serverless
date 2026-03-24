@@ -1,0 +1,10 @@
+{
+  "/api": {
+    "target": "https://ptq8yc281k.execute-api.us-east-1.amazonaws.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/api": "/prod"
+    }
+  }
+}
