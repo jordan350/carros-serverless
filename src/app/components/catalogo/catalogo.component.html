@@ -1,0 +1,24 @@
+<div class="main-container">
+  <div class="search-box">
+    <input type="text" placeholder="Buscar por nombre...">
+    <button>Buscar</button>
+  </div>
+
+  <div class="card-grid">
+    <div class="card" *ngFor="let carro of listaCarros">
+      <span class="card-tag">{{ carro.year }}</span>
+      <h3>{{ carro.name }}</h3>
+      <div class="info">
+        <span><strong>💰 Precio:</strong> ${{ carro.selling_price | number }}</span>
+        <span><strong>🚗 KM:</strong> {{ carro.km_driven | number }} km</span>
+      </div>
+      <div class="details">
+        <span class="badge">{{ carro.fuel }}</span>
+        <span class="badge">{{ carro.transmission }}</span>
+      </div>
+      <p style="font-size: 0.8rem; color: #999; margin-top: 15px;">
+        Owner: {{ carro.owner }}
+      </p>
+    </div>
+  </div>
+</div>

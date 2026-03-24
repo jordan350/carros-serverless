@@ -1,0 +1,101 @@
+/* Contenedor Principal */
+.main-container {
+  padding: 40px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7f9;
+  min-height: 100vh;
+}
+
+/* Buscador */
+.search-box {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.search-box input {
+  padding: 12px 20px;
+  width: 400px;
+  border: 2px solid #0078d4;
+  border-radius: 25px;
+  outline: none;
+}
+
+.search-box button {
+  padding: 10px 25px;
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.search-box button:hover {
+  background-color: #005a9e;
+}
+
+/* Cuadrícula de Tarjetas */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+/* Estilo de la Tarjeta */
+.card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  position: relative;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-top: 5px solid #0078d4;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.card-tag {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #e1f0ff;
+  color: #0078d4;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.card h3 {
+  margin: 10px 0;
+  color: #333;
+  font-size: 1.4rem;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 15px 0;
+  color: #555;
+}
+
+.details {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.badge {
+  background: #f0f2f5;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #666;
+}
