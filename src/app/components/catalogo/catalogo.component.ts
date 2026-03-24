@@ -11,6 +11,8 @@ import { Carro } from '../../models/carros.model';
   styleUrls: ['./catalogo.component.scss']
 })
 export class CatalogoComponent implements OnInit {
+  
+  listaCarrosCompleta: any[] = []; 
   listaCarros: any[] = [];
   cargando: boolean = false;
 
@@ -23,13 +25,15 @@ export class CatalogoComponent implements OnInit {
     this.obtenerTodos();
   }
 
+
   obtenerTodos(): void {
     this.cargando = true;
     this.carroService.getCarros().subscribe({
       next: (data) => {
-        this.listaCarros = data;
-        this.cargando = false;
-        this.cd.detectChanges(); 
+       this.listaCarrosCompleta = data; 
+      this.listaCarros = data;         
+      this.cargando = false;
+      this.cd.detectChanges();
       },
       error: (e) => {
         console.error(e);
@@ -39,26 +43,17 @@ export class CatalogoComponent implements OnInit {
     });
   }
 
-  buscar(nombre: string): void {
-
-    if (!nombre.trim()) {
-      this.obtenerTodos();
-      return;
-    }
-
-    this.cargando = true;
-    this.carroService.buscarPorNombre(nombre).subscribe({
-      next: (data) => {
-        this.listaCarros = data;
-        this.cargando = false;
-
-        this.cd.detectChanges(); 
-      },
-      error: (e) => {
-        console.error(e);
-        this.cargando = false;
-        this.cd.detectChanges();
-      }
-    });
+  buscar(termino: string): void {
+  if (!termino.trim()) {
+    this.listaCarros = [...this.listaCarrosCompleta];
+  } else {
+    const busqueda = termino.toLowerCase();
+    
+    this.listaCarros = this.listaCarrosCompleta.filter(carro => 
+      carro.name.toLowerCase().includes(busqueda)
+    );
   }
+  
+  this.cd.detectChanges();
+}
 }
