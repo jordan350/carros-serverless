@@ -1,13 +1,25 @@
 import * as cdk from 'aws-cdk-lib';
-import { InstanceClass, InstanceSize, InstanceType, Peer, Port, SecurityGroup, SubnetType, Vpc } from 'aws-cdk-lib/aws-ec2';
-import { Credentials, DatabaseInstance, DatabaseInstanceEngine, PostgresEngineVersion } from 'aws-cdk-lib/aws-rds';
+import {
+  Peer,
+  Port,
+  SecurityGroup,
+  SubnetType,
+  Vpc,
+} from 'aws-cdk-lib/aws-ec2';
+import {
+  AuroraPostgresEngineVersion,
+  ClusterInstance,
+  Credentials,
+  DatabaseCluster,
+  DatabaseClusterEngine,
+} from 'aws-cdk-lib/aws-rds';
 import * as secretsmanager from 'aws-cdk-lib/aws-secretsmanager';
 import { Construct } from 'constructs';
 import { environment } from '../helpers/environments';
 
 interface DBStackProps extends cdk.StackProps {
-  vpc: Vpc,
-  hl_env: environment,
+  vpc: Vpc;
+  hl_env: environment;
 }
 
 export class DBStack extends Construct {
@@ -17,7 +29,7 @@ export class DBStack extends Construct {
   constructor(scope: Construct, id: string, props: DBStackProps) {
     super(scope, id);
 
-    // database credentials
+    // Secret con credenciales de la base de datos
     this.dbCredentialsSecret = new secretsmanager.Secret(this, 'DBCredentialsSecret', {
       secretName: 'hl-DBCredentials',
       generateSecretString: {
@@ -26,41 +38,57 @@ export class DBStack extends Construct {
         excludePunctuation: true,
       },
     });
-    
-    // Security group to clúster RDS
+
+    // Security Group para Aurora PostgreSQL
     this.dbSecurityGroup = new SecurityGroup(this, 'DBSecurityGroup', {
-      securityGroupName: 'HLDBSecurityGroup',
+      securityGroupName: 'HLDBSecurityGroupAurora',
       vpc: props.vpc,
-      description: 'Permitir acceso a la base de datos desde Lambda o EC2',
-      allowAllOutbound: true
+      description: 'Permitir acceso a Aurora PostgreSQL desde Lambda o EC2',
+      allowAllOutbound: true,
     });
 
-    const rdsInstance = new DatabaseInstance(this, 'HL-RDS-DB', {
-      engine: DatabaseInstanceEngine.postgres({
-        version: PostgresEngineVersion.VER_17 // max POSTGRESQL version compatible
+    // Aurora PostgreSQL Serverless v2
+    const auroraCluster = new DatabaseCluster(this, 'HL-Aurora-PG', {
+      engine: DatabaseClusterEngine.auroraPostgres({
+        version: AuroraPostgresEngineVersion.VER_17_6,
       }),
-      instanceType: InstanceType.of(InstanceClass.BURSTABLE4_GRAVITON, InstanceSize.MICRO),
+      writer: ClusterInstance.serverlessV2('writer', {
+        publiclyAccessible: true,
+      }),
+      serverlessV2MinCapacity: 0.5,
+      serverlessV2MaxCapacity: 2,
       vpc: props.vpc,
       vpcSubnets: {
         subnetType: SubnetType.PUBLIC,
       },
       credentials: Credentials.fromSecret(this.dbCredentialsSecret),
-      instanceIdentifier: 'HL-database',
+      clusterIdentifier: 'hl-aurora-pg',
+      defaultDatabaseName: 'HLDB',
       securityGroups: [this.dbSecurityGroup],
-      publiclyAccessible: true,
-      allocatedStorage: 20,
-      multiAz: false,
-      backupRetention: cdk.Duration.days(1),
-      databaseName: 'HLDB',
+      backup: {
+        retention: cdk.Duration.days(1),
+      },
+      deletionProtection: false,
     });
 
-    if (props.hl_env == environment.DEV){
-      this.dbSecurityGroup.addIngressRule(Peer.anyIpv4(), Port.tcp(5432), 'Allow public access to the DB');
+    // Regla de acceso público para entorno DEV
+    if (props.hl_env === environment.DEV) {
+      this.dbSecurityGroup.addIngressRule(
+        Peer.anyIpv4(),
+        Port.tcp(5432),
+        'Allow public access to Aurora PostgreSQL'
+      );
     }
 
-    new cdk.CfnOutput(this, 'DBEndpoint', {
-      value: rdsInstance.instanceEndpoint.hostname,
-      exportName: 'RdsDBEndpoint',
+    // Outputs
+    new cdk.CfnOutput(this, 'DBClusterEndpoint', {
+      value: auroraCluster.clusterEndpoint.hostname,
+      exportName: 'AuroraClusterEndpoint',
+    });
+
+    new cdk.CfnOutput(this, 'DBReaderEndpoint', {
+      value: auroraCluster.clusterReadEndpoint.hostname,
+      exportName: 'AuroraReaderEndpoint',
     });
   }
 }
